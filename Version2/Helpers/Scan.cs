@@ -86,6 +86,7 @@ namespace Version2.Helpers
             try
             {
                 offset = IntPtr.Zero;
+                //get pattern offset
                 var Match = Scans.CompiledFindPattern(o.Pattern).Offset;
                 if (Match == 0x0) return false;
 
@@ -93,10 +94,16 @@ namespace Version2.Helpers
                     offset = new IntPtr(Match);
                 if (offset != IntPtr.Zero) return true;
 
+                //read value from offset position, normally ?? ?? ?? ?? position
                 var Value = Client.Read<int>(Client.Base + (Match + o.Position));
+
+                //get address, for value after ?? ?? ?? ??, should be + 4??
                 var nValAddress = Client.Base + (Match + (o.Position + 5));
+
+                //the real position for this 
                 var nValue = nValAddress + Value;
 
+                //the address offset without base address
                 var Found = nValue.ToInt64() - Client.Base.ToInt64() - (o.MinusOne ? 1 : 0);
                 if (Found != 0 && (null != o.Levels && o.Levels.Length > 0))
                     foreach (var l in o.Levels)
